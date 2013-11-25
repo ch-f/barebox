@@ -1,0 +1,21 @@
+config USB_MUSB_HOST
+	tristate 'Inventra Highspeed Dual Role Controller (TI, ADI, ...)'
+	depends on USB
+	select MUSB_PIO_ONLY
+	select USB_MUSB_DSPS
+	help
+	  Say Y here if your system has a dual role high speed USB
+	  controller based on the Mentor Graphics silicon IP.  Then
+	  configure options to match your silicon and the board
+	  it's being used with, including the USB peripheral role,
+	  or the USB host role, or both.
+
+if USB_MUSB_HOST
+
+config USB_MUSB_DSPS
+	bool USB_MUSB_DSPS
+
+config MUSB_PIO_ONLY
+	bool MUSB_PIO_ONLY
+
+endif # USB_MUSB_HOST
