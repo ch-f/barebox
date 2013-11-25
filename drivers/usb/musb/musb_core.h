@@ -45,11 +45,14 @@
 #include <linux/usb.h>
 #include <linux/usb/otg.h>
 #else
-#include <asm/errno.h>
+#include <errno.h>
 #endif
-#include <linux/usb/ch9.h>
-#include <linux/usb/gadget.h>
-#include <linux/usb/musb.h>
+#ifdef __BAREBOX__
+#include "musb.h"
+#else
+#include <usb/musb.h>
+#endif
+#include <usb/usb.h>
 
 struct musb;
 struct musb_hw_ep;
@@ -71,7 +74,6 @@ struct musb_ep;
 #include "musb_io.h"
 #include "musb_regs.h"
 
-#include "musb_gadget.h"
 #ifndef __BAREBOX__
 #include <linux/usb/hcd.h>
 #endif
@@ -118,7 +120,7 @@ extern void musb_g_disconnect(struct musb *);
 #ifndef __BAREBOX__
 #define	is_host_capable()	(1)
 #else
-#ifdef CONFIG_MUSB_HOST
+#ifdef CONFIG_USB_MUSB_HOST
 #define	is_host_capable()	(1)
 #else
 #define	is_host_capable()	(0)
@@ -167,7 +169,6 @@ enum musb_g_ep0_state {
 #define OTG_TIME_A_WAIT_BCON	1100		/* min 1 second */
 #define OTG_TIME_A_AIDL_BDIS	200		/* min 200 msec */
 #define OTG_TIME_B_ASE0_BRST	100		/* min 3.125 ms */
-
 
 /*************************** REGISTER ACCESS ********************************/
 
@@ -289,21 +290,7 @@ struct musb_hw_ep {
 
 	u8			rx_reinit;
 	u8			tx_reinit;
-
-	/* peripheral side */
-	struct musb_ep		ep_in;			/* TX */
-	struct musb_ep		ep_out;			/* RX */
 };
-
-static inline struct musb_request *next_in_request(struct musb_hw_ep *hw_ep)
-{
-	return next_request(&hw_ep->ep_in);
-}
-
-static inline struct musb_request *next_out_request(struct musb_hw_ep *hw_ep)
-{
-	return next_request(&hw_ep->ep_out);
-}
 
 struct musb_csr_regs {
 	/* FIFO registers */
@@ -369,7 +356,7 @@ struct musb {
 
 	struct dma_controller	*dma_controller;
 
-	struct device		*controller;
+	struct device_d		*controller;
 	void __iomem		*ctrl_base;
 	void __iomem		*mregs;
 
@@ -447,8 +434,6 @@ struct musb {
 	u8			test_mode_nr;
 	u16			ackpend;		/* ep0 */
 	enum musb_g_ep0_state	ep0_state;
-	struct usb_gadget	g;			/* the gadget */
-	struct usb_gadget_driver *gadget_driver;	/* its driver */
 
 	/*
 	 * FIXME: Remove this flag.
@@ -465,15 +450,12 @@ struct musb {
 
 	struct musb_hdrc_config	*config;
 
+	struct usb_host barebox_host;
+
 #ifdef MUSB_CONFIG_PROC_FS
 	struct proc_dir_entry *proc_entry;
 #endif
 };
-
-static inline struct musb *gadget_to_musb(struct usb_gadget *g)
-{
-	return container_of(g, struct musb, g);
-}
 
 #ifdef CONFIG_BLACKFIN
 static inline int musb_read_fifosize(struct musb *musb,
@@ -617,7 +599,7 @@ static inline int musb_platform_exit(struct musb *musb)
 
 #ifdef __BAREBOX__
 struct musb *
-musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
+musb_init_controller(struct musb_hdrc_platform_data *plat, struct device_d *dev,
 			     void *ctrl);
 #endif
 #endif	/* __MUSB_CORE_H__ */

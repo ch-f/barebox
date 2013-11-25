@@ -333,8 +333,6 @@ static irqreturn_t dsps_interrupt(int irq, void *hci)
 	if (usbintr)
 		dsps_writel(reg_base, wrp->coreintr_status, usbintr);
 
-	dev_dbg(musb->controller, "usbintr (%x) epintr(%x)\n",
-			usbintr, epintr);
 #ifndef __BAREBOX__
 	/*
 	 * DRVVBUS IRQs are the only proxy we have (a very poor one!) for

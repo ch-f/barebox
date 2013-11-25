@@ -45,7 +45,7 @@
 #include <linux/dma-mapping.h>
 #else
 #include <common.h>
-#include <usb.h>
+#include <usb/usb.h>
 #include "linux-compat.h"
 #include "usb-compat.h"
 #endif

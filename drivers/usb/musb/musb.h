@@ -106,8 +106,10 @@ struct musb_hdrc_platform_data {
 	/* for clk_get() */
 	const char	*clock;
 
+#ifndef __BAREBOX__
 	/* (HOST or OTG) switch VBUS on/off */
 	int		(*set_vbus)(struct device *dev, int is_on);
+#endif
 
 	/* (HOST or OTG) mA/2 power supplied on (default = 8mA) */
 	u8		power;

@@ -102,11 +102,13 @@
 #include <linux/io.h>
 #else
 #include <common.h>
-#include <usb.h>
-#include <asm/errno.h>
-#include <linux/usb/ch9.h>
-#include <linux/usb/gadget.h>
-#include <linux/usb/musb.h>
+#include <usb/usb.h>
+#include <errno.h>
+#ifdef __BAREBOX__
+#include "musb.h"
+#else
+#include <usb/musb.h>
+#endif
 #include <asm/io.h>
 #include "linux-compat.h"
 #include "usb-compat.h"
@@ -1836,7 +1838,7 @@ static void musb_irq_work(struct work_struct *data)
  */
 
 static struct musb *__devinit
-allocate_instance(struct device *dev,
+allocate_instance(struct device_d *dev,
 		struct musb_hdrc_config *config, void __iomem *mbase)
 {
 	struct musb		*musb;
@@ -1924,7 +1926,7 @@ static int __devinit
 musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
 #else
 struct musb *
-musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
+musb_init_controller(struct musb_hdrc_platform_data *plat, struct device_d *dev,
 			     void *ctrl)
 #endif
 {
@@ -2091,8 +2093,10 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 		musb->xceiv->state = OTG_STATE_B_IDLE;
 #endif
 
+#ifdef CONFIG_MUSB_GADGET
 		if (is_peripheral_capable())
 			status = musb_gadget_setup(musb);
+#endif
 
 #ifndef __BAREBOX__
 		dev_dbg(musb->controller, "%s mode, status %d, dev%02x\n",
@@ -2144,7 +2148,9 @@ fail4:
 		usb_remove_hcd(musb_to_hcd(musb));
 	else
 #endif
+#ifdef CONFIG_MUSB_GADGET
 		musb_gadget_cleanup(musb);
+#endif
 
 fail3:
 	pm_runtime_put_sync(musb->controller);

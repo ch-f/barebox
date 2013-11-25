@@ -1,7 +1,7 @@
 #ifndef __USB_COMPAT_H__
 #define __USB_COMPAT_H__
 
-#include "usb.h"
+#include <usb/usb.h>
 
 struct usb_hcd {
 	void *hcd_priv;
