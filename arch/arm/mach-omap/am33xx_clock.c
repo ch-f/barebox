@@ -26,6 +26,8 @@
 #define PLL_LOCK_MODE	0x7
 #define PLL_MULTIPLIER_SHIFT	 8
 
+#define DPLL_CLKDCOLDO_GATE_EN	(0x1 << 8)
+
 static void interface_clocks_enable(void)
 {
 	/* Enable all the Interconnect Modules */
@@ -154,6 +156,11 @@ static void per_clocks_enable(void)
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_SPI1_CLKCTRL);
 	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN);
+
+	/* USB */
+	__raw_writel(DPLL_CLKDCOLDO_GATE_EN, CM_CLKDCOLDO_DPLL_PER);
+	__raw_writel(PRCM_MOD_EN, CM_PER_USB0_CLKCTRL);
+	while (__raw_readl(CM_PER_USB0_CLKCTRL) != PRCM_MOD_EN);
 }
 
 static void mpu_pll_config(int mpupll_M, int osc)

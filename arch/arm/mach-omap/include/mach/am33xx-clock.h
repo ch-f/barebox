@@ -120,6 +120,8 @@
 #define CM_PER_TIMER2_CLKCTRL           (CM_PER + 0x80) /* Timer2 */
 #define CM_WKUP_UART0_CLKCTRL           (CM_WKUP + 0xB4)/* UART0 */
 #define CM_WKUP_CONTROL_CLKCTRL         (CM_WKUP + 0x4) /* Control Module */
+#define CM_PER_USB0_CLKCTRL             (CM_PER + 0x1C) /* USB */
+#define CM_CLKDCOLDO_DPLL_PER           (CM_WKUP + 0x7C)/* USB phy */
 #define CM_PER_EMIF_CLKCTRL             (CM_PER + 0x28) /* EMIF */
 #define CM_PER_EMIF_FW_CLKCTRL          (CM_PER + 0xD0) /* EMIF FW */
 #define CM_PER_GPMC_CLKCTRL             (CM_PER + 0x30) /* GPMC */
