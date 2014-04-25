@@ -31,6 +31,7 @@
 #include <mach/am33xx-generic.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/am33xx-usb.h>
 #include <mach/bbu.h>
 
 
@@ -58,10 +59,15 @@ static char *xloadslots[] = {
 	"/dev/nand0.xload_backup3.bb"
 };
 
+static struct am33xx_usb_pdata pcm051_usb_data = {
+	.bus_number = 1,
+};
+
 static void pcm051_usb_init(void)
 {
 	am33xx_enable_usb0_pin_mux();
 	am33xx_enable_usb1_pin_mux();
+	am33xx_add_usb(&pcm051_usb_data);
 }
 
 static int pcm051_devices_init(void)
