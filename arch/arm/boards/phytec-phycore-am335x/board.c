@@ -27,8 +27,10 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/phy.h>
+#include <mach/am33xx-mux.h>
 #include <mach/am33xx-generic.h>
 #include <mach/am33xx-silicon.h>
+#include <mach/am33xx-clock.h>
 #include <mach/bbu.h>
 
 
@@ -56,6 +58,12 @@ static char *xloadslots[] = {
 	"/dev/nand0.xload_backup3.bb"
 };
 
+static void pcm051_usb_init(void)
+{
+	am33xx_enable_usb0_pin_mux();
+	am33xx_enable_usb1_pin_mux();
+}
+
 static int pcm051_devices_init(void)
 {
 	if (!of_machine_is_compatible("phytec,pcm051"))
@@ -80,6 +88,8 @@ static int pcm051_devices_init(void)
 	am33xx_bbu_spi_nor_mlo_register_handler("MLO.spi", "/dev/m25p0.xload");
 	am33xx_bbu_nand_xloadslots_register_handler("MLO.nand",
 		xloadslots, ARRAY_SIZE(xloadslots));
+
+	pcm051_usb_init();
 
 	return 0;
 }
