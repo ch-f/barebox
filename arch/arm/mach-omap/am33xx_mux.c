@@ -253,6 +253,20 @@ static const __maybe_unused struct module_pin_mux spi1_pin_mux[] = {
 	{-1},
 };
 
+static const __maybe_unused struct module_pin_mux usb0_pin_mux[] = {
+	{OFFSET(usb0_drvvbus), MODE(0)},
+	/* MCASP0_AHCLKR gpio3_17  */
+	{OFFSET(mcasp0_ahclkr), MODE(7) | PULLUDEN | RXACTIVE | PULLUP_EN},
+	{-1},
+};
+
+static const __maybe_unused struct module_pin_mux usb1_pin_mux[] = {
+	{OFFSET(usb1_drvvbus), MODE(0)},
+	/* MCASP0_ACLKR gpio3_18 */
+	{OFFSET(mcasp0_aclkr), MODE(7) | PULLUDEN | RXACTIVE | PULLUP_EN},
+	{-1},
+};
+
 /*
  * Configure the pin mux for the module
  */
@@ -320,4 +334,14 @@ void am33xx_enable_spi0_pin_mux(void)
 void am33xx_enable_nand_pin_mux(void)
 {
 	configure_module_pin_mux(nand_pin_mux);
+}
+
+void am33xx_enable_usb0_pin_mux(void)
+{
+	configure_module_pin_mux(usb0_pin_mux);
+}
+
+void am33xx_enable_usb1_pin_mux(void)
+{
+	configure_module_pin_mux(usb1_pin_mux);
 }
