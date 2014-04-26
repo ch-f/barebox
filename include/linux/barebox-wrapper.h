@@ -38,6 +38,8 @@ typedef int   spinlock_t;
 #define spin_lock_init(...)
 #define spin_lock(...)
 #define spin_unlock(...)
+#define spin_lock_irqsave(...)
+#define spin_unlock_irqrestore(...)
 
 #define mutex_init(...)
 #define mutex_lock(...)
