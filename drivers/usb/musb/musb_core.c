@@ -943,10 +943,7 @@ void musb_start(struct musb *musb)
 	musb_writeb(regs, MUSB_TESTMODE, 0);
 
 	/* put into basic highspeed mode and start session */
-	musb_writeb(regs, MUSB_POWER, MUSB_POWER_ISOUPDATE
-#ifdef CONFIG_USB_GADGET_DUALSPEED
-						| MUSB_POWER_HSENAB
-#endif
+	musb_writeb(regs, MUSB_POWER, MUSB_POWER_ISOUPDATE | MUSB_POWER_HSENAB
 						/* ENSUSPEND wedges tusb */
 						/* | MUSB_POWER_ENSUSPEND */
 						);
