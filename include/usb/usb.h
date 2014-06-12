@@ -27,6 +27,7 @@
 #include <driver.h>
 #include <usb/usb_defs.h>
 #include <asm/byteorder.h>
+#include <asm/unaligned.h>
 
 /* Everything is aribtrary */
 #define USB_ALTSETTINGALLOC		4
@@ -40,6 +41,31 @@
 #define USB_MAX_HUB			16
 
 #define USB_CNTL_TIMEOUT 100 /* 100ms timeout */
+
+/**
+ * struct usb_ctrlrequest - SETUP data for a USB device control request
+ * @bRequestType: matches the USB bmRequestType field
+ * @bRequest: matches the USB bRequest field
+ * @wValue: matches the USB wValue field (le16 byte order)
+ * @wIndex: matches the USB wIndex field (le16 byte order)
+ * @wLength: matches the USB wLength field (le16 byte order)
+ *
+ * This structure is used to send control requests to a USB device.  It matches
+ * the different fields of the USB 2.0 Spec section 9.3, table 9-2.  See the
+ * USB spec for a fuller description of the different fields, and what they are
+ * used for.
+ *
+ * Note that the driver for any interface can issue control requests.
+ * For most devices, interfaces don't coordinate with each other, so
+ * such requests may be made at any time.
+ */
+struct usb_ctrlrequest {
+	__u8 bRequestType;
+	__u8 bRequest;
+	__le16 wValue;
+	__le16 wIndex;
+	__le16 wLength;
+} __attribute__ ((packed));
 
 /* String descriptor */
 struct usb_string_descriptor {
@@ -539,4 +565,40 @@ enum usb_phy_interface {
 	USBPHY_INTERFACE_MODE_SERIAL,
 	USBPHY_INTERFACE_MODE_HSIC,
 };
+
+
+/**
+ * usb_endpoint_maxp - get endpoint's max packet size
+ * @epd: endpoint to be checked
+ *
+ * Returns @epd's max packet
+ */
+static inline int usb_endpoint_maxp(const struct usb_endpoint_descriptor *epd)
+{
+	return __le16_to_cpu(get_unaligned(&epd->wMaxPacketSize));
+}
+
+/**
+ * usb_endpoint_type - get the endpoint's transfer type
+ * @epd: endpoint to be checked
+ *
+ * Returns one of USB_ENDPOINT_XFER_{CONTROL, ISOC, BULK, INT} according
+ * to @epd's transfer type.
+ */
+static inline int usb_endpoint_type(const struct usb_endpoint_descriptor *epd)
+{
+	return epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
+}
+
+/**
+ * usb_endpoint_num - get the endpoint's number
+ * @epd: endpoint to be checked
+ *
+ * Returns @epd's number: 0 to 15.
+ */
+static inline int usb_endpoint_num(const struct usb_endpoint_descriptor *epd)
+{
+	return epd->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
+}
+
 #endif /*_USB_H_ */
