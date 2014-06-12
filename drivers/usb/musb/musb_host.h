@@ -34,7 +34,7 @@
 
 #ifndef _MUSB_HOST_H
 #define _MUSB_HOST_H
-#ifdef __UBOOT__
+#ifdef __BAREBOX__
 #include "usb-compat.h"
 #endif
 
@@ -108,7 +108,7 @@ static inline struct urb *next_urb(struct musb_qh *qh)
 	return list_entry(queue->next, struct urb, urb_list);
 }
 
-#ifdef __UBOOT__
+#ifdef __BAREBOX__
 int musb_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flags);
 #endif
 #endif				/* _MUSB_HOST_H */

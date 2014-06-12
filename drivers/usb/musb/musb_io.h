@@ -35,7 +35,7 @@
 #ifndef __MUSB_LINUX_PLATFORM_ARCH_H__
 #define __MUSB_LINUX_PLATFORM_ARCH_H__
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #include <linux/io.h>
 #else
 #include <asm/io.h>

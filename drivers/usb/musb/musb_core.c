@@ -89,8 +89,7 @@
  * Most of the conditional compilation will (someday) vanish.
  */
 
-#define __UBOOT__
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/sched.h>
@@ -134,7 +133,7 @@ MODULE_LICENSE("GPL");
 MODULE_ALIAS("platform:" MUSB_DRIVER_NAME);
 
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 /*-------------------------------------------------------------------------*/
 
 static inline struct musb *dev_to_musb(struct device *dev)
@@ -145,7 +144,7 @@ static inline struct musb *dev_to_musb(struct device *dev)
 
 /*-------------------------------------------------------------------------*/
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #ifndef CONFIG_BLACKFIN
 static int musb_ulpi_read(struct usb_phy *phy, u32 offset)
 {
@@ -360,7 +359,7 @@ void musb_load_testpacket(struct musb *musb)
 	musb_writew(regs, MUSB_CSR0, MUSB_CSR0_TXPKTRDY);
 }
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 /*-------------------------------------------------------------------------*/
 
 /*
@@ -450,7 +449,7 @@ void musb_hnp_stop(struct musb *musb)
 static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 				u8 devctl, u8 power)
 {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct usb_otg *otg = musb->xceiv->otg;
 #endif
 	irqreturn_t handled = IRQ_NONE;
@@ -458,7 +457,7 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 	dev_dbg(musb->controller, "<== Power=%02x, DevCtl=%02x, int_usb=0x%x\n", power, devctl,
 		int_usb);
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/* in host mode, the peripheral may issue remote wakeup.
 	 * in peripheral mode, the host may resume the link.
 	 * spurious RESUME irqs happen too, paired with SUSPEND.
@@ -712,7 +711,7 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 		musb_writew(musb->mregs, MUSB_INTRTXE, musb->epmask);
 		musb_writew(musb->mregs, MUSB_INTRRXE, musb->epmask & 0xfffe);
 		musb_writeb(musb->mregs, MUSB_INTRUSBE, 0xf7);
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		musb->port1_status &= ~(USB_PORT_STAT_LOW_SPEED
 					|USB_PORT_STAT_HIGH_SPEED
 					|USB_PORT_STAT_ENABLE
@@ -763,7 +762,7 @@ b_host:
 #endif
 	}
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if ((int_usb & MUSB_INTR_DISCONNECT) && !musb->ignore_disconnect) {
 		dev_dbg(musb->controller, "DISCONNECT (%s) as %s, devctl %02x\n",
 				otg_state_string(musb->xceiv->state),
@@ -955,7 +954,7 @@ void musb_start(struct musb *musb)
 	devctl &= ~MUSB_DEVCTL_SESSION;
 
 	if (is_otg_enabled(musb)) {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		/* session started after:
 		 * (a) ID-grounded irq, host mode;
 		 * (b) vbus present/connect IRQ, peripheral mode;
@@ -1024,7 +1023,7 @@ void musb_stop(struct musb *musb)
 	musb_platform_try_idle(musb, 0);
 }
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static void musb_shutdown(struct platform_device *pdev)
 {
 	struct musb	*musb = dev_to_musb(&pdev->dev);
@@ -1818,7 +1817,7 @@ static const struct attribute_group musb_attr_group = {
 
 #endif	/* sysfs */
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 /* Only used to provide driver mode change events */
 static void musb_irq_work(struct work_struct *data)
 {
@@ -1843,7 +1842,7 @@ allocate_instance(struct device *dev,
 	struct musb		*musb;
 	struct musb_hw_ep	*ep;
 	int			epnum;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct usb_hcd	*hcd;
 
 	hcd = usb_create_hcd(&musb_hc_driver, dev, dev_name(dev));
@@ -1861,7 +1860,7 @@ allocate_instance(struct device *dev,
 	INIT_LIST_HEAD(&musb->in_bulk);
 	INIT_LIST_HEAD(&musb->out_bulk);
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	hcd->uses_new_polling = 1;
 	hcd->has_tt = 1;
 #endif
@@ -1920,7 +1919,7 @@ static void musb_free(struct musb *musb)
  * @mregs: virtual address of controller registers,
  *	not yet corrected for platform-specific offsets
  */
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static int __devinit
 musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
 #else
@@ -1931,7 +1930,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 {
 	int			status;
 	struct musb		*musb;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct musb_hdrc_platform_data *plat = dev->platform_data;
 #else
 	int nIrq = 0;
@@ -1984,7 +1983,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 		goto fail2;
 	}
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if (!musb->xceiv->io_ops) {
 		musb->xceiv->io_dev = musb->controller;
 		musb->xceiv->io_priv = musb->mregs;
@@ -2004,7 +2003,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 			(void) c->start(c);
 	}
 #endif
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/* ideally this would be abstracted in platform setup */
 	if (!is_dma_capable() || !musb->dma_controller)
 		dev->dma_mask = NULL;
@@ -2041,7 +2040,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 		musb->irq_wake = 0;
 	}
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/* host side needs more setup */
 	if (is_host_enabled(musb)) {
 		struct usb_hcd	*hcd = musb_to_hcd(musb);
@@ -2070,7 +2069,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 		struct usb_hcd	*hcd = musb_to_hcd(musb);
 
 		MUSB_HST_MODE(musb);
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		musb->xceiv->otg->default_a = 1;
 		musb->xceiv->state = OTG_STATE_A_IDLE;
 
@@ -2087,7 +2086,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 
 	} else /* peripheral is enabled */ {
 		MUSB_DEV_MODE(musb);
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		musb->xceiv->otg->default_a = 0;
 		musb->xceiv->state = OTG_STATE_B_IDLE;
 #endif
@@ -2095,7 +2094,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 		if (is_peripheral_capable())
 			status = musb_gadget_setup(musb);
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		dev_dbg(musb->controller, "%s mode, status %d, dev%02x\n",
 			is_otg_enabled(musb) ? "OTG" : "PERIPHERAL",
 			status,
@@ -2130,7 +2129,7 @@ musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 			? "DMA" : "PIO",
 			musb->nIrq);
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	return 0;
 #else
 	return status == 0 ? musb : NULL;
@@ -2140,7 +2139,7 @@ fail5:
 	musb_exit_debugfs(musb);
 
 fail4:
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if (!is_otg_enabled(musb) && is_host_enabled(musb))
 		usb_remove_hcd(musb_to_hcd(musb));
 	else
@@ -2163,7 +2162,7 @@ fail1:
 
 fail0:
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	return status;
 #else
 	return status == 0 ? musb : NULL;
@@ -2181,7 +2180,7 @@ fail0:
 static u64	*orig_dma_mask;
 #endif
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static int __devinit musb_probe(struct platform_device *pdev)
 {
 	struct device	*dev = &pdev->dev;

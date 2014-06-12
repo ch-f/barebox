@@ -33,8 +33,7 @@
  *
  */
 
-#define __UBOOT__
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/delay.h>
@@ -237,7 +236,7 @@ musb_start_urb(struct musb *musb, int is_in, struct musb_qh *qh)
 		buf = urb->setup_packet;
 		len = 8;
 		break;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	case USB_ENDPOINT_XFER_ISOC:
 		qh->iso_idx = 0;
 		qh->frame = 0;
@@ -257,7 +256,7 @@ musb_start_urb(struct musb *musb, int is_in, struct musb_qh *qh)
 			({char *s; switch (qh->type) {
 			case USB_ENDPOINT_XFER_CONTROL:	s = ""; break;
 			case USB_ENDPOINT_XFER_BULK:	s = "-bulk"; break;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 			case USB_ENDPOINT_XFER_ISOC:	s = "-iso"; break;
 #endif
 			default:			s = "-intr"; break;
@@ -274,7 +273,7 @@ musb_start_urb(struct musb *musb, int is_in, struct musb_qh *qh)
 
 	/* determine if the time is right for a periodic transfer */
 	switch (qh->type) {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	case USB_ENDPOINT_XFER_ISOC:
 #endif
 	case USB_ENDPOINT_XFER_INT:
@@ -283,7 +282,7 @@ musb_start_urb(struct musb *musb, int is_in, struct musb_qh *qh)
 		/* FIXME this doesn't implement that scheduling policy ...
 		 * or handle framecounter wrapping
 		 */
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		if ((urb->transfer_flags & URB_ISO_ASAP)
 				|| (frame >= urb->start_frame)) {
 			/* REVISIT the SOF irq handler shouldn't duplicate
@@ -299,7 +298,7 @@ musb_start_urb(struct musb *musb, int is_in, struct musb_qh *qh)
 #if 1 /* ifndef	CONFIG_ARCH_DAVINCI */
 			musb_writeb(mbase, MUSB_INTRUSBE, 0xff);
 #endif
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		}
 #endif
 		break;
@@ -378,7 +377,7 @@ static void musb_advance_schedule(struct musb *musb, struct urb *urb,
 	case USB_ENDPOINT_XFER_INT:
 		musb_save_toggle(qh, is_in, urb);
 		break;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	case USB_ENDPOINT_XFER_ISOC:
 		if (status == 0 && urb->error_count)
 			status = -EXDEV;
@@ -493,7 +492,7 @@ musb_host_packet_rx(struct musb *musb, struct urb *urb, u8 epnum, u8 iso_err)
 			urb->transfer_buffer_length);
 
 	/* unload FIFO */
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if (usb_pipeisoc(pipe)) {
 		int					status = 0;
 		struct usb_iso_packet_descriptor	*d;
@@ -547,7 +546,7 @@ musb_host_packet_rx(struct musb *musb, struct urb *urb, u8 epnum, u8 iso_err)
 				&& (urb->actual_length
 					< urb->transfer_buffer_length))
 			urb->status = -EREMOTEIO;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	}
 #endif
 
@@ -1288,7 +1287,7 @@ void musb_host_tx(struct musb *musb, u8 epnum)
 		qh->offset += length;
 
 		if (usb_pipeisoc(pipe)) {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 			struct usb_iso_packet_descriptor	*d;
 
 			d = urb->iso_frame_desc + qh->iso_idx;
@@ -1921,7 +1920,7 @@ success:
 	return 0;
 }
 
-#ifdef __UBOOT__
+#ifdef __BAREBOX__
 /* check if transaction translator is needed for device */
 static int tt_needed(struct musb *musb, struct usb_device *dev)
 {
@@ -1932,7 +1931,7 @@ static int tt_needed(struct musb *musb, struct usb_device *dev)
 }
 #endif
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static int musb_urb_enqueue(
 #else
 int musb_urb_enqueue(
@@ -2070,14 +2069,14 @@ int musb_urb_enqueue(
 	if (musb->is_multipoint) {
 		struct usb_device	*parent = urb->dev->parent;
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 		if (parent != hcd->self.root_hub) {
 #else
 		if (parent) {
 #endif
 			qh->h_addr_reg = (u8) parent->devnum;
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 			/* set up tt info if needed */
 			if (urb->dev->tt) {
 				qh->h_port_reg = (u8) urb->dev->ttport;
@@ -2132,7 +2131,7 @@ done:
 }
 
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 /*
  * abort a transfer that's at the head of a hardware queue.
  * called with controller locked, irqs blocked

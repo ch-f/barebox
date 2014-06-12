@@ -29,8 +29,7 @@
  * da8xx.c would be merged to this file after testing.
  */
 
-#define __UBOOT__
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/err.h>
@@ -159,7 +158,7 @@ struct dsps_glue {
  */
 static void dsps_musb_enable(struct musb *musb)
 {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct device *dev = musb->controller;
 	struct platform_device *pdev = to_platform_device(dev->parent);
 	struct dsps_glue *glue = platform_get_drvdata(pdev);
@@ -178,7 +177,7 @@ static void dsps_musb_enable(struct musb *musb)
 	dsps_writel(reg_base, wrp->epintr_set, epmask);
 	dsps_writel(reg_base, wrp->coreintr_set, coremask);
 	/* Force the DRVVBUS IRQ so we can start polling for ID change. */
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if (is_otg_enabled(musb))
 		dsps_writel(reg_base, wrp->coreintr_set,
 			    (1 << wrp->drvvbus) << wrp->usb_shift);
@@ -190,7 +189,7 @@ static void dsps_musb_enable(struct musb *musb)
  */
 static void dsps_musb_disable(struct musb *musb)
 {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct device *dev = musb->controller;
 	struct platform_device *pdev = to_platform_device(dev->parent);
 	struct dsps_glue *glue = platform_get_drvdata(pdev);
@@ -205,7 +204,7 @@ static void dsps_musb_disable(struct musb *musb)
 #endif
 }
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static void otg_timer(unsigned long _musb)
 {
 	struct musb *musb = (void *)_musb;
@@ -303,7 +302,7 @@ static irqreturn_t dsps_interrupt(int irq, void *hci)
 {
 	struct musb  *musb = hci;
 	void __iomem *reg_base = musb->ctrl_base;
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct device *dev = musb->controller;
 	struct platform_device *pdev = to_platform_device(dev->parent);
 	struct dsps_glue *glue = platform_get_drvdata(pdev);
@@ -336,7 +335,7 @@ static irqreturn_t dsps_interrupt(int irq, void *hci)
 
 	dev_dbg(musb->controller, "usbintr (%x) epintr(%x)\n",
 			usbintr, epintr);
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/*
 	 * DRVVBUS IRQs are the only proxy we have (a very poor one!) for
 	 * DSPS IP's missing ID change IRQ.  We need an ID change IRQ to
@@ -404,7 +403,7 @@ static irqreturn_t dsps_interrupt(int irq, void *hci)
 	if (ret == IRQ_HANDLED || epintr || usbintr)
 		dsps_writel(reg_base, wrp->eoi, 1);
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/* Poll for ID change */
 	if (is_otg_enabled(musb) && musb->xceiv->state == OTG_STATE_B_IDLE)
 		mod_timer(&glue->timer, jiffies + wrp->poll_seconds * HZ);
@@ -417,7 +416,7 @@ static irqreturn_t dsps_interrupt(int irq, void *hci)
 
 static int dsps_musb_init(struct musb *musb)
 {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct device *dev = musb->controller;
 	struct musb_hdrc_platform_data *plat = dev->platform_data;
 	struct platform_device *pdev = to_platform_device(dev->parent);
@@ -436,7 +435,7 @@ static int dsps_musb_init(struct musb *musb)
 	/* mentor core register starts at offset of 0x400 from musb base */
 	musb->mregs += wrp->musb_core_offset;
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/* NOP driver needs change if supporting dual instance */
 	usb_nop_xceiv_register();
 	musb->xceiv = usb_get_phy(USB_PHY_TYPE_USB2);
@@ -451,7 +450,7 @@ static int dsps_musb_init(struct musb *musb)
 		goto err0;
 	}
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if (is_host_enabled(musb))
 		setup_timer(&glue->timer, otg_timer, (unsigned long) musb);
 #endif
@@ -475,7 +474,7 @@ static int dsps_musb_init(struct musb *musb)
 
 	return 0;
 err0:
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	usb_put_phy(musb->xceiv);
 	usb_nop_xceiv_unregister();
 #endif
@@ -484,7 +483,7 @@ err0:
 
 static int dsps_musb_exit(struct musb *musb)
 {
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	struct device *dev = musb->controller;
 	struct musb_hdrc_platform_data *plat = dev->platform_data;
 	struct omap_musb_board_data *data = plat->board_data;
@@ -495,7 +494,7 @@ static int dsps_musb_exit(struct musb *musb)
 			(struct omap_musb_board_data *)musb->controller;
 #endif
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	if (is_host_enabled(musb))
 		del_timer_sync(&glue->timer);
 #endif
@@ -504,7 +503,7 @@ static int dsps_musb_exit(struct musb *musb)
 	if (data->set_phy_power)
 		data->set_phy_power(0);
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	/* NOP driver needs change if supporting dual instance */
 	usb_put_phy(musb->xceiv);
 	usb_nop_xceiv_unregister();
@@ -513,7 +512,7 @@ static int dsps_musb_exit(struct musb *musb)
 	return 0;
 }
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static struct musb_platform_ops dsps_ops = {
 #else
 struct musb_platform_ops musb_dsps_ops = {
@@ -524,16 +523,16 @@ struct musb_platform_ops musb_dsps_ops = {
 	.enable		= dsps_musb_enable,
 	.disable	= dsps_musb_disable,
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 	.try_idle	= dsps_musb_try_idle,
 #endif
 };
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static u64 musb_dmamask = DMA_BIT_MASK(32);
 #endif
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static int __devinit dsps_create_musb_pdev(struct dsps_glue *glue, u8 id)
 {
 	struct device *dev = glue->dev;
@@ -723,7 +722,7 @@ static int dsps_resume(struct device *dev)
 static SIMPLE_DEV_PM_OPS(dsps_pm_ops, dsps_suspend, dsps_resume);
 #endif
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 static const struct platform_device_id musb_dsps_id_table[] __devinitconst = {
 	{
 		.name	= "musb-ti81xx",

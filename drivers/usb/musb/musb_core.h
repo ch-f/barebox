@@ -35,7 +35,7 @@
 #ifndef __MUSB_CORE_H__
 #define __MUSB_CORE_H__
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #include <linux/slab.h>
 #include <linux/list.h>
 #include <linux/interrupt.h>
@@ -72,7 +72,7 @@ struct musb_ep;
 #include "musb_regs.h"
 
 #include "musb_gadget.h"
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #include <linux/usb/hcd.h>
 #endif
 #include "musb_host.h"
@@ -94,7 +94,7 @@ struct musb_ep;
 
 /****************************** PERIPHERAL ROLE *****************************/
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #define	is_peripheral_capable()	(1)
 #else
 #ifdef CONFIG_MUSB_GADGET
@@ -115,7 +115,7 @@ extern void musb_g_disconnect(struct musb *);
 
 /****************************** HOST ROLE ***********************************/
 
-#ifndef __UBOOT__
+#ifndef __BAREBOX__
 #define	is_host_capable()	(1)
 #else
 #ifdef CONFIG_MUSB_HOST
@@ -615,7 +615,7 @@ static inline int musb_platform_exit(struct musb *musb)
 	return musb->ops->exit(musb);
 }
 
-#ifdef __UBOOT__
+#ifdef __BAREBOX__
 struct musb *
 musb_init_controller(struct musb_hdrc_platform_data *plat, struct device *dev,
 			     void *ctrl);
